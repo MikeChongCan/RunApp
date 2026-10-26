@@ -200,10 +200,23 @@ struct SweetPadClient: Sendable {
     /// The stream finishes after the process exits; the last event is normally `.result`.
     /// stderr (which repeats the error envelope on failure) is ignored here.
     func stream(_ args: [String]) -> AsyncThrowingStream<BuildEvent, Error> {
+        spawnStream(args + ["-o", "ndjson", "--non-interactive"], parse: BuildEvent.parse(line:))
+    }
+
+    /// Runs `sweetpad <args>` and yields each raw stdout line, e.g. for `app logs -o ndjson`, whose lines are
+    /// log objects rather than `event` lines. Add `-o ndjson` yourself. Cancelling sends SIGTERM.
+    func streamLines(_ args: [String]) -> AsyncThrowingStream<Data, Error> {
+        spawnStream(args) { $0 }
+    }
+
+    private func spawnStream<Element: Sendable>(
+        _ args: [String],
+        parse: @escaping @Sendable (Data) -> Element?
+    ) -> AsyncThrowingStream<Element, Error> {
         AsyncThrowingStream { continuation in
             let process: Process
             do {
-                process = try makeProcess(args: args + ["-o", "ndjson", "--non-interactive"])
+                process = try makeProcess(args: args)
             } catch {
                 continuation.finish(throwing: error)
                 return
@@ -216,8 +229,8 @@ struct SweetPadClient: Sendable {
             let splitter = LineSplitter()
             stdoutPipe.fileHandleForReading.readabilityHandler = { handle in
                 for line in splitter.feed(handle.availableData) {
-                    if let event = BuildEvent.parse(line: line) {
-                        continuation.yield(event)
+                    if let element = parse(line) {
+                        continuation.yield(element)
                     }
                 }
             }
@@ -225,8 +238,8 @@ struct SweetPadClient: Sendable {
                 stdoutPipe.fileHandleForReading.readabilityHandler = nil
                 let rest = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
                 for line in splitter.feed(rest) + splitter.flush() {
-                    if let event = BuildEvent.parse(line: line) {
-                        continuation.yield(event)
+                    if let element = parse(line) {
+                        continuation.yield(element)
                     }
                 }
                 continuation.finish()

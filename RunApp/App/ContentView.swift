@@ -8,15 +8,8 @@ struct ContentView: View {
     var body: some View {
         Group {
             if let project = model.project {
-                ContentUnavailableView {
-                    Label(project.displayName, systemImage: "hammer")
-                } description: {
-                    Text(project.url.path)
-                } actions: {
-                    if model.candidates.count > 1 {
-                        Button("Switch Project…") { model.showPicker() }
-                    }
-                }
+                RunView(project: project)
+                    .id(project)
             } else if model.isDiscovering {
                 ProgressView("Looking for projects…")
             } else if !model.candidates.isEmpty {
