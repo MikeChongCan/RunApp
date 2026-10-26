@@ -1,0 +1,39 @@
+excluded:
+  - DerivedData
+  - .build
+  - build
+  - RunApp.xcodeproj
+
+disabled_rules:
+  - todo
+  - trailing_comma
+  - opening_brace          # conflicts with swiftformat wrapping
+  - nesting
+  - optional_data_string_conversion  # String(decoding:as:) is intentional for logs
+
+opt_in_rules:
+  - empty_count
+  - first_where
+  - redundant_nil_coalescing
+
+line_length:
+  warning: 140
+  error: 200
+  ignores_comments: true
+  ignores_urls: true
+
+identifier_name:
+  min_length: 1
+  max_length: 60
+
+type_body_length:
+  warning: 400
+  error: 600
+
+file_length:
+  warning: 600
+  error: 1000
+
+function_body_length:
+  warning: 80
+  error: 150
