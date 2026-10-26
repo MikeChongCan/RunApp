@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" version="1.1">
+  <defs>
+    <!-- Master Drop Shadow for macOS Squircle Base -->
+    <filter id="squircleShadow" x="-15%" y="-10%" width="130%" height="135%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="28" stdDeviation="32" flood-color="#000000" flood-opacity="0.45"/>
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.28"/>
+    </filter>
+
+    <!-- Clip Path for Mac Squircle Container -->
+    <clipPath id="squircleClip">
+      <rect x="100" y="100" width="824" height="824" rx="185"/>
+    </clipPath>
+
+    <!-- Squircle Background Neutral Graphite Gradient -->
+    <linearGradient id="squircleBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#262932"/>
+      <stop offset="50%" stop-color="#181A22"/>
+      <stop offset="100%" stop-color="#0F1015"/>
+    </linearGradient>
+
+    <!-- Squircle Border Highlight Stroke -->
+    <linearGradient id="squircleBorder" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.22"/>
+      <stop offset="40%" stop-color="#FFFFFF" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.40"/>
+    </linearGradient>
+
+    <!-- Ambient Blue Radial Glow Behind Device Plate -->
+    <radialGradient id="ambientGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0A66D6" stop-opacity="0.22"/>
+      <stop offset="65%" stop-color="#0A66D6" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#0A66D6" stop-opacity="0.0"/>
+    </radialGradient>
+
+    <!-- Device Plate Shadow -->
+    <filter id="plateShadow" x="-20%" y="-15%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="20" stdDeviation="22" flood-color="#000000" flood-opacity="0.50"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.25"/>
+    </filter>
+
+    <!-- Device Plate Translucent Glass Gradient -->
+    <linearGradient id="plateGlass" x1="20%" y1="10%" x2="80%" y2="90%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.16"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.09"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.04"/>
+    </linearGradient>
+
+    <!-- Device Plate Bevel Stroke -->
+    <linearGradient id="plateStroke" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#FFFFFF" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    </linearGradient>
+
+    <!-- Play Glyph Shadow -->
+    <filter id="playShadow" x="-30%" y="-25%" width="160%" height="160%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#00214D" flood-opacity="0.60"/>
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.38"/>
+    </filter>
+
+    <!-- Play Triangle System Blue Gradient -->
+    <linearGradient id="playGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2EA5FF"/>
+      <stop offset="35%" stop-color="#0A7AFF"/>
+      <stop offset="100%" stop-color="#0058C6"/>
+    </linearGradient>
+
+    <!-- Play Triangle Specular Bevel Stroke -->
+    <linearGradient id="playStroke" x1="25%" y1="0%" x2="75%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.70"/>
+      <stop offset="45%" stop-color="#FFFFFF" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#004399" stop-opacity="0.45"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 1. Background Squircle with Shadow & Border -->
+  <g filter="url(#squircleShadow)">
+    <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#squircleBg)"/>
+    <rect x="100" y="100" width="824" height="824" rx="185" fill="none" stroke="url(#squircleBorder)" stroke-width="2.5"/>
+  </g>
+
+  <!-- Elements clipped inside Squircle -->
+  <g clip-path="url(#squircleClip)">
+    <!-- Ambient Blue Depth Glow -->
+    <circle cx="512" cy="512" r="380" fill="url(#ambientGlow)"/>
+
+    <!-- 2. Midground: Device / Window Glass Plate -->
+    <g filter="url(#plateShadow)">
+      <rect x="240" y="192" width="544" height="640" rx="88" fill="url(#plateGlass)" stroke="url(#plateStroke)" stroke-width="3"/>
+      <!-- Subtle top sensor pill / dynamic island -->
+      <rect x="462" y="222" width="100" height="8" rx="4" fill="#FFFFFF" fill-opacity="0.30"/>
+      <!-- Subtle bottom home indicator bar -->
+      <rect x="437" y="798" width="150" height="6" rx="3" fill="#FFFFFF" fill-opacity="0.22"/>
+    </g>
+
+    <!-- 3. Foreground: Sculpted Play Triangle -->
+    <g filter="url(#playShadow)">
+      <path d="M 408 376 C 408 348 434 330 459 344 L 682 486 C 706 500 706 524 682 538 L 459 680 C 434 694 408 676 408 648 Z"
+            fill="url(#playGradient)"
+            stroke="url(#playStroke)"
+            stroke-width="4.5"
+            stroke-linejoin="round"/>
+    </g>
+  </g>
+</svg>

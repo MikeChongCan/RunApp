@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" version="1.1">
+  <defs>
+    <!-- Play Triangle System Blue Gradient -->
+    <linearGradient id="playGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2EA5FF"/>
+      <stop offset="35%" stop-color="#0A7AFF"/>
+      <stop offset="100%" stop-color="#0058C6"/>
+    </linearGradient>
+
+    <!-- Play Triangle Specular Bevel Stroke -->
+    <linearGradient id="playStroke" x1="25%" y1="0%" x2="75%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.75"/>
+      <stop offset="45%" stop-color="#FFFFFF" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="#004399" stop-opacity="0.45"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sculpted Play Triangle -->
+  <path d="M 408 376 C 408 348 434 330 459 344 L 682 486 C 706 500 706 524 682 538 L 459 680 C 434 694 408 676 408 648 Z"
+        fill="url(#playGradient)"
+        stroke="url(#playStroke)"
+        stroke-width="4.5"
+        stroke-linejoin="round"/>
+</svg>
