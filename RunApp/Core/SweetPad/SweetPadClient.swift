@@ -306,7 +306,7 @@ final class LineSplitter: @unchecked Sendable {
 }
 
 /// Lets a cancellation handler terminate a `Process` from another isolation domain.
-private final class ProcessBox: @unchecked Sendable {
+final class ProcessBox: @unchecked Sendable {
     private let process: Process
 
     init(_ process: Process) {

@@ -3,6 +3,7 @@ import SwiftUI
 /// Placeholder root view. The real layout (toolbar, sidebar, console) lives in `Features/`.
 struct ContentView: View {
     @Environment(AppModel.self) private var model
+    @Environment(Toolchain.self) private var toolchain
 
     var body: some View {
         Group {
@@ -11,7 +12,15 @@ struct ContentView: View {
                     Label(project.displayName, systemImage: "hammer")
                 } description: {
                     Text(project.url.path)
+                } actions: {
+                    if model.candidates.count > 1 {
+                        Button("Switch Project…") { model.showPicker() }
+                    }
                 }
+            } else if model.isDiscovering {
+                ProgressView("Looking for projects…")
+            } else if !model.candidates.isEmpty {
+                ProjectPickerView()
             } else if let path = model.openedPath {
                 ContentUnavailableView {
                     Label("No Xcode project found", systemImage: "questionmark.folder")
@@ -31,6 +40,17 @@ struct ContentView: View {
             }
         }
         .frame(minWidth: 600, minHeight: 400)
+        .task { toolchain.check() }
+        .sheet(isPresented: Binding(
+            get: { toolchain.needsSweetPad },
+            set: {
+                if !$0 {
+                    toolchain.dismissed = true
+                }
+            }
+        )) {
+            SweetPadInstallView()
+        }
     }
 
     private var openButton: some View {
@@ -43,4 +63,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environment(AppModel())
+        .environment(Toolchain())
 }
