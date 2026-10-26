@@ -30,6 +30,11 @@ struct RunView: View {
             }
         }
         .onDisappear { session.tearDown() }
+        .safeAreaInset(edge: .bottom) {
+            if session.signingProblem, !session.isBusy {
+                SigningRetryBar(session: session)
+            }
+        }
         .overlay(alignment: .top) {
             if let error = session.loadError {
                 Label(error, systemImage: "exclamationmark.triangle")
@@ -76,6 +81,21 @@ struct RunView: View {
             }
             .help("Build configuration")
             .disabled(session.isBusy)
+
+            Picker(selection: $session.signing) {
+                Text(SigningOverride.project.title).tag(SigningOverride.project)
+                Text(SigningOverride.local.title).tag(SigningOverride.local)
+                if !session.teams.isEmpty {
+                    Divider()
+                    ForEach(session.teams) { team in
+                        Text(SigningOverride.team(team).title).tag(SigningOverride.team(team))
+                    }
+                }
+            } label: {
+                Label("Signing", systemImage: session.signing == .project ? "signature" : "checkmark.seal")
+            }
+            .help("Code signing for this run: \(session.signing.title)")
+            .disabled(session.isBusy)
         }
 
         ToolbarItemGroup(placement: .primaryAction) {
@@ -91,5 +111,33 @@ struct RunView: View {
             }
             .help("Open in Xcode")
         }
+    }
+}
+
+/// Shown after a build fails on code signing: retry with an override, without editing the project.
+private struct SigningRetryBar: View {
+    let session: RunSession
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "signature")
+                .foregroundStyle(.orange)
+            Text("Signing failed with \(session.signing.title). Retry with:")
+            if SigningOverride.local.isUsable(on: session.destination), session.signing != .local {
+                Button(SigningOverride.local.title) { session.retry(with: .local) }
+                    .buttonStyle(.borderedProminent)
+            }
+            if !session.teams.isEmpty {
+                Menu("Team") {
+                    ForEach(session.teams) { team in
+                        Button(SigningOverride.team(team).title) { session.retry(with: .team(team)) }
+                    }
+                }
+                .fixedSize()
+            }
+            Spacer()
+        }
+        .padding(10)
+        .background(.bar)
     }
 }

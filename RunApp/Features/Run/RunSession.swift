@@ -51,6 +51,15 @@ final class RunSession {
     var scheme: String?
     var configuration = "Debug"
     var destinationID: Destination.ID?
+    /// Signing override for runs; remembered per project.
+    var signing: SigningOverride = .project {
+        didSet { signing.remember(for: project) }
+    }
+
+    /// Teams with an Apple Development identity on this Mac.
+    private(set) var teams: [SigningTeam] = []
+    /// The last build failed on code signing: the UI offers to retry with another override.
+    private(set) var signingProblem = false
 
     private(set) var phase: Phase = .idle
     private(set) var isLoading = false
@@ -69,6 +78,7 @@ final class RunSession {
     init(project: LocatedProject) {
         self.project = project
         client = SweetPadClient(workingDirectory: project.directory)
+        signing = SigningOverride.remembered(for: project)
     }
 
     var destination: Destination? {
@@ -93,6 +103,9 @@ final class RunSession {
             return "No scheme"
         }
         guard let destination else { return "Choose a destination" }
+        if !signing.isUsable(on: destination) {
+            return "Sign to Run Locally can't install on a device. Pick a team under Signing"
+        }
         if destination.connection == "unavailable" {
             return "\(destination.name) is unavailable"
         }
@@ -101,7 +114,14 @@ final class RunSession {
 
     // MARK: Loading
 
+    /// Switches signing and runs again (from the signing-failure banner).
+    func retry(with override: SigningOverride) {
+        signing = override
+        run()
+    }
+
     func load() async {
+        teams = await Task.detached { SigningTeams.load() }.value
         isLoading = true
         loadError = nil
         defer { isLoading = false }
@@ -156,8 +176,13 @@ final class RunSession {
         phase = .building
         status = "Building \(scheme)…"
 
-        let args = ["run", "--scheme", scheme, "--on", destination.onArgument, "--configuration", configuration, "--detach"]
+        signingProblem = false
+        var args = ["run", "--scheme", scheme, "--on", destination.onArgument, "--configuration", configuration, "--detach"]
             + project.sweetPadArguments
+        let overrides = signing.xcodebuildArguments
+        if !overrides.isEmpty {
+            args += ["--"] + overrides
+        }
         append(.command, "$ sweetpad \(args.joined(separator: " "))")
 
         runTask = Task {
@@ -186,6 +211,9 @@ final class RunSession {
             let location = diagnostic.location.map { ($0 as NSString).lastPathComponent + "  " } ?? ""
             if diagnostic.severity == "error" {
                 errorCount += 1
+                if SigningOverride.isSigningFailure(diagnostic.message) {
+                    signingProblem = true
+                }
                 append(.error, "✖ \(location)\(diagnostic.message)")
             } else {
                 warningCount += 1
@@ -202,7 +230,10 @@ final class RunSession {
         guard let result, result.ok else {
             let message = result?.error?.message ?? "sweetpad exited without a result"
             append(.error, "✖ \(message)")
-            status = "Build failed"
+            if SigningOverride.isSigningFailure(message) {
+                signingProblem = true
+            }
+            status = signingProblem ? "Signing failed" : "Build failed"
             phase = .idle
             return
         }
