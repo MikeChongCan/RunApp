@@ -13,20 +13,30 @@ struct ContentView: View {
                     Text(project.url.path)
                 }
             } else if let path = model.openedPath {
-                ContentUnavailableView(
-                    "No Xcode project found",
-                    systemImage: "questionmark.folder",
-                    description: Text("Nothing buildable in \(path.path)")
-                )
+                ContentUnavailableView {
+                    Label("No Xcode project found", systemImage: "questionmark.folder")
+                } description: {
+                    Text("Nothing buildable in \(path.path)")
+                } actions: {
+                    openButton
+                }
             } else {
-                ContentUnavailableView(
-                    "Open a project",
-                    systemImage: "play.rectangle",
-                    description: Text("Run `runapp .` in a folder with an Xcode project.")
-                )
+                ContentUnavailableView {
+                    Label("Open a project", systemImage: "play.rectangle")
+                } description: {
+                    Text("Run `runapp .` in a folder with an Xcode project.")
+                } actions: {
+                    openButton
+                }
             }
         }
         .frame(minWidth: 600, minHeight: 400)
+    }
+
+    private var openButton: some View {
+        Button("Open…") { model.presentOpenPanel() }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
     }
 }
 

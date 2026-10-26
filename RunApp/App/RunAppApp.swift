@@ -10,6 +10,12 @@ struct RunAppApp: App {
                 .environment(appDelegate.model)
         }
         .defaultSize(width: 980, height: 640)
+        .commands {
+            CommandGroup(replacing: .newItem) {
+                Button("Open…") { appDelegate.model.presentOpenPanel() }
+                    .keyboardShortcut("o")
+            }
+        }
     }
 }
 
@@ -25,6 +31,20 @@ final class AppModel {
     func open(_ url: URL) {
         openedPath = url
         project = ProjectLocator.locate(url)
+    }
+
+    /// Lets the user pick a folder, `.xcodeproj`, `.xcworkspace` or `Package.swift`.
+    func presentOpenPanel() {
+        let panel = NSOpenPanel()
+        panel.message = "Choose a folder, Xcode project, workspace or Swift package"
+        panel.prompt = "Open"
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = true
+        panel.allowsMultipleSelection = false
+        panel.treatsFilePackagesAsDirectories = false
+        if panel.runModal() == .OK, let url = panel.url {
+            open(url)
+        }
     }
 }
 
