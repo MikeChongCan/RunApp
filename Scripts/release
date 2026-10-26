@@ -1,0 +1,385 @@
+#!/usr/bin/env bash
+# release — Developer ID build, notarize, and publish a RunApp update.
+#   Scripts/release 0.1.0 [build] [--dry-run]
+#
+# Local development builds stay ad-hoc (Project.swift). This script overrides signing
+# on the xcodebuild command line only.
+#
+# --dry-run signs and packages, writes the would-be feed to build/release/appcast.preview.xml
+# (appcast.xml and Project.swift are left alone), and skips notarization, stapling,
+# `gh release`, git commit, and git push.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT" || exit 1
+
+IDENTITY="Developer ID Application: RockieStar Inc. (DH5UQL44AR)"
+TEAM="DH5UQL44AR"
+SPARKLE_VERSION="2.10.1"
+SPARKLE_URL="https://github.com/sparkle-project/Sparkle/releases/download/${SPARKLE_VERSION}/Sparkle-${SPARKLE_VERSION}.tar.xz"
+FEED_REPO="https://github.com/MikeChongCan/RunApp"
+
+DRY_RUN=0
+APPCAST="$ROOT/appcast.xml"
+
+usage() {
+  cat <<'EOF'
+usage: Scripts/release <version> [build] [--dry-run]
+
+  version   MARKETING_VERSION (for example 0.1.0)
+  build     CURRENT_PROJECT_VERSION (default 1)
+  --dry-run sign and package only; skip notarization, GitHub release, commit, and push
+EOF
+}
+
+log() {
+  printf 'release: %s\n' "$*"
+}
+
+require() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    printf 'release: required command not found: %s\n' "$1" >&2
+    exit 1
+  fi
+}
+
+positional=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --dry-run)
+      DRY_RUN=1
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      positional+=("$@")
+      break
+      ;;
+    -*)
+      printf 'release: unknown option: %s\n' "$1" >&2
+      usage >&2
+      exit 1
+      ;;
+    *)
+      positional+=("$1")
+      shift
+      ;;
+  esac
+done
+
+if [[ ${#positional[@]} -lt 1 || ${#positional[@]} -gt 2 ]]; then
+  usage >&2
+  exit 1
+fi
+
+VERSION="${positional[0]}"
+BUILD="${positional[1]:-1}"
+
+if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  printf 'release: version must look like 0.1.0 (got %s)\n' "$VERSION" >&2
+  exit 1
+fi
+if [[ ! "$BUILD" =~ ^[0-9]+$ ]]; then
+  printf 'release: build must be an integer (got %s)\n' "$BUILD" >&2
+  exit 1
+fi
+
+require mise
+require xcodebuild
+require codesign
+require ditto
+require hdiutil
+require curl
+require tar
+require python3
+if [[ "$DRY_RUN" -eq 0 ]]; then
+  require asc
+  require gh
+  require git
+  require xcrun
+fi
+
+if ! security find-identity -v -p codesigning | grep -F "$IDENTITY" >/dev/null; then
+  printf 'release: signing identity not in the keychain: %s\n' "$IDENTITY" >&2
+  exit 1
+fi
+
+REL="$ROOT/build/release"
+APP="$REL/export/RunApp.app"
+ZIP="$REL/RunApp-${VERSION}.zip"
+DMG="$REL/RunApp-${VERSION}.dmg"
+ARCHIVE="$REL/RunApp.xcarchive"
+
+bump_versions() {
+  python3 - "$VERSION" "$BUILD" <<'PY'
+import pathlib
+import re
+import sys
+
+version, build = sys.argv[1], sys.argv[2]
+path = pathlib.Path("Project.swift")
+text = path.read_text()
+text, n_marketing = re.subn(
+    r'(?m)^(let marketingVersion = ).*$',
+    lambda match: f'{match.group(1)}"{version}"',
+    text,
+    count=1,
+)
+text, n_build = re.subn(
+    r'(?m)^(let buildNumber = ).*$',
+    lambda match: f'{match.group(1)}"{build}"',
+    text,
+    count=1,
+)
+if n_marketing != 1 or n_build != 1:
+    raise SystemExit("Project.swift is missing `let marketingVersion` or `let buildNumber`")
+path.write_text(text)
+PY
+}
+
+write_export_options() {
+  cat >"$REL/ExportOptions.plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>developer-id</string>
+	<key>signingStyle</key>
+	<string>manual</string>
+	<key>teamID</key>
+	<string>${TEAM}</string>
+	<key>signingCertificate</key>
+	<string>Developer ID Application</string>
+</dict>
+</plist>
+EOF
+}
+
+verify_app() {
+  local target="$1"
+  codesign --verify --deep --strict --verbose=2 "$target"
+  local details
+  if ! details="$(codesign -dv --verbose=4 "$target" 2>&1)"; then
+    printf 'release: unable to read the signature of %s\n' "$target" >&2
+    printf '%s\n' "$details" >&2
+    exit 1
+  fi
+  printf '%s\n' "$details"
+  if ! printf '%s\n' "$details" | grep -F "TeamIdentifier=${TEAM}" >/dev/null; then
+    printf 'release: expected TeamIdentifier=%s\n' "$TEAM" >&2
+    exit 1
+  fi
+}
+
+notarize() {
+  local file="$1"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    log "dry-run: skipping notarization of $(basename "$file")"
+    return 0
+  fi
+  asc --profile default notarization submit --file "$file" --wait --timeout 1h
+}
+
+staple() {
+  local file="$1"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    log "dry-run: skipping stapler for $(basename "$file") (no notarization ticket)"
+    return 0
+  fi
+  xcrun stapler staple "$file"
+}
+
+ensure_sparkle_tools() {
+  local dest="$ROOT/.build/sparkle"
+  local bin="$dest/bin/sign_update"
+  if [[ -x "$bin" ]]; then
+    return 0
+  fi
+  mkdir -p "$dest"
+  local tarball="$dest/Sparkle-${SPARKLE_VERSION}.tar.xz"
+  log "downloading Sparkle ${SPARKLE_VERSION} tools"
+  curl -fL --retry 3 --retry-delay 2 -o "$tarball" "$SPARKLE_URL"
+  tar -xJf "$tarball" -C "$dest"
+  if [[ ! -x "$bin" ]]; then
+    printf 'release: sign_update missing after extracting %s\n' "$tarball" >&2
+    exit 1
+  fi
+}
+
+zip_app() {
+  rm -f "$ZIP"
+  ditto -c -k --keepParent "$APP" "$ZIP"
+}
+
+make_dmg() {
+  local staging="$REL/dmg-root"
+  rm -rf "$staging"
+  mkdir -p "$staging"
+  ditto "$APP" "$staging/RunApp.app"
+  ln -s /Applications "$staging/Applications"
+  rm -f "$DMG"
+  hdiutil create -volname "RunApp" -srcfolder "$staging" -ov -format UDZO "$DMG"
+  rm -rf "$staging"
+  codesign --sign "$IDENTITY" --timestamp "$DMG"
+  codesign --verify --verbose=2 "$DMG"
+}
+
+insert_appcast() {
+  local pub_date signature length url
+  pub_date="$(LC_ALL=C date -u +"%a, %d %b %Y %H:%M:%S +0000")"
+  signature="$1"
+  length="$2"
+  url="${FEED_REPO}/releases/download/v${VERSION}/RunApp-${VERSION}.zip"
+  python3 - "$APPCAST" "$VERSION" "$BUILD" "$pub_date" "$length" "$signature" "$url" <<'PY'
+import pathlib
+import re
+import sys
+import xml.etree.ElementTree as ET
+from xml.sax.saxutils import escape
+
+path, version, build, pub_date, length, signature, url = sys.argv[1:]
+
+def esc(value: str) -> str:
+    return escape(value, {'"': "&quot;"})
+
+item = (
+    "    <item>\n"
+    f"      <title>Version {esc(version)}</title>\n"
+    f"      <pubDate>{esc(pub_date)}</pubDate>\n"
+    f"      <sparkle:version>{esc(build)}</sparkle:version>\n"
+    f"      <sparkle:shortVersionString>{esc(version)}</sparkle:shortVersionString>\n"
+    "      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>\n"
+    f'      <enclosure url="{esc(url)}" length="{esc(length)}" type="application/octet-stream" sparkle:edSignature="{esc(signature)}"/>\n'
+    "    </item>\n"
+)
+text = pathlib.Path(path).read_text()
+item_pattern = re.compile(r"[ \t]*<item>.*?</item>\n?", re.DOTALL)
+version_tag = f"<sparkle:version>{build}</sparkle:version>"
+
+def drop_same_build(match):
+    block = match.group(0)
+    if version_tag in block:
+        return ""
+    return block
+
+text = item_pattern.sub(drop_same_build, text)
+needle = "</channel>"
+index = text.rfind(needle)
+if index == -1:
+    raise SystemExit("appcast.xml is missing </channel>")
+line_start = text.rfind("\n", 0, index) + 1
+text = text[:line_start] + item + text[line_start:]
+ET.fromstring(text)
+pathlib.Path(path).write_text(text)
+PY
+}
+
+log "version ${VERSION} (${BUILD})"
+rm -rf "$REL"
+mkdir -p "$REL"
+if [[ "$DRY_RUN" -eq 1 ]]; then
+  # Build the requested version without touching the tracked Project.swift.
+  cp Project.swift "$REL/Project.swift.orig"
+  trap 'cp "$REL/Project.swift.orig" Project.swift' EXIT
+  cp appcast.xml "$REL/appcast.preview.xml"
+  APPCAST="$REL/appcast.preview.xml"
+fi
+bump_versions
+"$ROOT/Scripts/generate"
+write_export_options
+
+log "archiving"
+xcodebuild archive \
+  -project "$ROOT/RunApp.xcodeproj" \
+  -scheme RunApp \
+  -configuration Release \
+  -destination "generic/platform=macOS" \
+  -archivePath "$ARCHIVE" \
+  -quiet \
+  CODE_SIGN_STYLE=Manual \
+  "DEVELOPMENT_TEAM=${TEAM}" \
+  "CODE_SIGN_IDENTITY=${IDENTITY}" \
+  "OTHER_CODE_SIGN_FLAGS=--timestamp" \
+  ENABLE_HARDENED_RUNTIME=YES
+
+log "exporting Developer ID app"
+xcodebuild -exportArchive \
+  -archivePath "$ARCHIVE" \
+  -exportPath "$REL/export" \
+  -exportOptionsPlist "$REL/ExportOptions.plist" \
+  -quiet
+
+if [[ ! -d "$APP" ]]; then
+  printf 'release: exported app not found at %s\n' "$APP" >&2
+  exit 1
+fi
+
+log "verifying signature"
+verify_app "$APP"
+
+ensure_sparkle_tools
+SIGN_UPDATE="$ROOT/.build/sparkle/bin/sign_update"
+
+log "zipping for notarization"
+zip_app
+notarize "$ZIP"
+staple "$APP"
+
+log "re-zipping stapled app"
+zip_app
+
+log "building disk image"
+make_dmg
+notarize "$DMG"
+staple "$DMG"
+
+log "signing update archive"
+sig_out="$("$SIGN_UPDATE" --account RunApp "$ZIP")"
+printf '%s\n' "$sig_out"
+parsed="$(python3 - "$sig_out" <<'PY'
+import re
+import sys
+
+text = sys.argv[1]
+match = re.search(r'edSignature="([^"]+)"\s+length="(\d+)"', text)
+if not match:
+    raise SystemExit("could not parse sign_update output:\n" + text)
+print(match.group(1))
+print(match.group(2))
+PY
+)"
+ED_SIG="$(printf '%s\n' "$parsed" | sed -n '1p')"
+ED_LEN="$(printf '%s\n' "$parsed" | sed -n '2p')"
+if [[ -z "$ED_SIG" || -z "$ED_LEN" ]]; then
+  printf 'release: empty Sparkle signature\n' >&2
+  exit 1
+fi
+
+insert_appcast "$ED_SIG" "$ED_LEN"
+log "updated $(basename "$APPCAST")"
+
+if [[ "$DRY_RUN" -eq 1 ]]; then
+  log "dry-run: skipping GitHub release, commit, and push"
+  log "app: $APP"
+  log "zip: $ZIP"
+  log "dmg: $DMG"
+  exit 0
+fi
+
+log "publishing GitHub release v${VERSION}"
+gh release create "v${VERSION}" \
+  --title "v${VERSION}" \
+  --notes "RunApp ${VERSION} (${BUILD})." \
+  "$ZIP" \
+  "$DMG"
+
+log "committing version and appcast"
+git add -- Project.swift appcast.xml
+git commit -m "chore(release): v${VERSION}"
+git push
+log "released v${VERSION}"

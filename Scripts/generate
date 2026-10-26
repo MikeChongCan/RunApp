@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Generates RunApp.xcodeproj from Project.swift with the Tuist version pinned in mise.toml.
+# Needs mise (brew install mise), then `mise trust && mise install` once in the repo.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+command -v mise >/dev/null || { echo "generate: mise is not installed (brew install mise)" >&2; exit 1; }
+mise exec -- tuist version >/dev/null 2>&1 \
+  || { echo "generate: Tuist from mise.toml is not available: run 'mise trust && mise install'" >&2; exit 1; }
+mise exec -- tuist generate --no-open
+# The project is the one entry point (scripts use -project); drop the workspace Tuist adds.
+rm -rf RunApp.xcworkspace

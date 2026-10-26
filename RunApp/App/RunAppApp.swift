@@ -16,6 +16,9 @@ struct RunAppApp: App {
                 Button("Open…") { appDelegate.model.presentOpenPanel() }
                     .keyboardShortcut("o")
             }
+            CommandGroup(after: .appInfo) {
+                CheckForUpdatesButton(updater: appDelegate.updater)
+            }
         }
     }
 }
@@ -97,11 +100,16 @@ final class AppModel {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let model = AppModel()
     let toolchain = Toolchain()
+    let updater = Updater()
 
     func applicationWillFinishLaunching(_: Notification) {
         if let url = ProjectLocator.pathArgument(from: CommandLine.arguments) {
             model.open(url)
         }
+    }
+
+    func applicationDidFinishLaunching(_: Notification) {
+        updater.start()
     }
 
     func application(_: NSApplication, open urls: [URL]) {
