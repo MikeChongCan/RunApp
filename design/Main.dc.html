@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RunApp main window</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,"SF Pro Text",system-ui,sans-serif;color:#1D1D1F;background:#D9D9DE}
+a{color:#0A5FC2}a:hover{color:#084A97}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="box-sizing: border-box; width: 100%; min-height: 800px; padding: 24px; display: flex; justify-content: center; background: #D9D9DE">
+<div style="width: 100%; max-width: 1232px; border-radius: 12px; overflow: hidden; background: #FFFFFF; border: 1px solid #C7C7CC; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.18)">
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 14px; background: #F2F2F5; border-bottom: 1px solid #D1D1D6">
+<div aria-hidden="true" style="display: flex; gap: 8px; padding-right: 8px">
+<span style="width: 12px; height: 12px; border-radius: 6px; background: #FF5F57"></span>
+<span style="width: 12px; height: 12px; border-radius: 6px; background: #FEBC2E"></span>
+<span style="width: 12px; height: 12px; border-radius: 6px; background: #28C840"></span>
+</div>
+<button onClick="{{toggleRun}}" aria-label="{{runLabel}}" style="width: 44px; height: 32px; border-radius: 8px; border: 1px solid #C7C7CC; background: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer">
+<sc-if value="{{running}}" hint-placeholder-val="{{false}}">
+<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="2" width="10" height="10" rx="1.5" fill="#1D1D1F"></rect></svg>
+</sc-if>
+<sc-if value="{{idle}}" hint-placeholder-val="{{true}}">
+<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.8v10.4L12 7z" fill="{{accent}}"></path></svg>
+</sc-if>
+</button>
+<div style="display: flex; align-items: center; gap: 4px; height: 32px; padding: 0 10px; border-radius: 8px; background: #FFFFFF; border: 1px solid #D1D1D6; font-size: 13px">
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#636366" stroke-width="1.4" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5"></rect><path d="M6 6h4M6 9h4"></path></svg>
+<span style="font-weight: 600; padding-left: 4px">{{scheme}}</span>
+<span aria-hidden="true" style="color: #8E8E93; padding: 0 4px">›</span>
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#636366" stroke-width="1.4" aria-hidden="true"><rect x="4.5" y="1.5" width="7" height="13" rx="1.8"></rect><path d="M7 12.2h2"></path></svg>
+<span style="padding-left: 4px">{{destName}}</span>
+<span style="font-size: 11px; color: #636366; padding-left: 6px">{{destKind}}</span>
+</div>
+<div style="flex: 1 1 260px; min-width: 0; display: flex; justify-content: center">
+<div style="display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 14px; border-radius: 8px; background: #E9E9ED; font-size: 12px; color: #3A3A3C; max-width: 420px; width: 100%; box-sizing: border-box">
+<span style="font-weight: 600">Demo</span>
+<span aria-hidden="true" style="color: #8E8E93">|</span>
+<span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{statusText}}</span>
+</div>
+</div>
+<div style="display: flex; gap: 8px">
+<button style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid #D1D1D6; background: #FFFFFF; font-size: 12px; color: #1D1D1F">Clean</button>
+<button style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid #D1D1D6; background: #FFFFFF; font-size: 12px; color: #1D1D1F">Open in Xcode</button>
+</div>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; flex: 1 1 auto; min-height: 640px">
+<div style="flex: 1 1 260px; max-width: 300px; box-sizing: border-box; background: #F5F5F7; border-right: 1px solid #E5E5EA; padding: 16px 12px; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 0 8px">
+<span style="font-size: 11px; font-weight: 600; color: #636366; letter-spacing: 0.04em">PROJECT</span>
+<span style="font-size: 13px; font-weight: 600">Demo.xcodeproj</span>
+<span style="font-size: 11px; color: #636366; font-family: 'SF Mono', ui-monospace, Menlo, monospace">~/Code/Demo · runapp .</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 11px; font-weight: 600; color: #636366; letter-spacing: 0.04em; padding: 0 8px 4px">SCHEMES</span>
+<sc-for list="{{schemes}}" as="s" hint-placeholder-count="3">
+<button onClick="{{s.pick}}" style="{{s.rowStyle}}">{{s.name}}</button>
+</sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 0 8px">
+<span style="font-size: 11px; font-weight: 600; color: #636366; letter-spacing: 0.04em">CONFIGURATION</span>
+<div role="group" aria-label="Build configuration" style="display: flex; background: #E3E3E8; border-radius: 7px; padding: 2px">
+<sc-for list="{{configs}}" as="c" hint-placeholder-count="2">
+<button onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="{{c.segStyle}}">{{c.name}}</button>
+</sc-for>
+</div>
+</div>
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="4">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 11px; font-weight: 600; color: #636366; letter-spacing: 0.04em; padding: 0 8px 4px">{{g.title}}</span>
+<sc-for list="{{g.items}}" as="d" hint-placeholder-count="2">
+<button onClick="{{d.pick}}" style="{{d.rowStyle}}">
+<span style="display: flex; flex-direction: column; align-items: flex-start; gap: 1px; min-width: 0">
+<span style="font-size: 13px">{{d.name}}</span>
+<span style="font-size: 11px; color: {{d.subColor}}">{{d.os}}</span>
+</span>
+<span style="font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: {{d.badgeBg}}; color: {{d.badgeFg}}">{{d.link}}</span>
+</button>
+</sc-for>
+</div>
+</sc-for>
+</div>
+
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; background: #1C1C1E">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 14px; background: #2C2C2E; border-bottom: 1px solid #3A3A3C">
+<span style="font-size: 12px; font-weight: 600; color: #F2F2F7; padding: 4px 10px; border-radius: 6px; background: #3A3A3C">Build</span>
+<span style="font-size: 12px; color: #AEAEB2; padding: 4px 10px">App output</span>
+<span style="font-size: 12px; color: #AEAEB2; padding: 4px 10px">Device log</span>
+<span style="flex: 1 1 auto"></span>
+<label for="logfilter" style="font-size: 11px; color: #AEAEB2">Filter</label>
+<input id="logfilter" placeholder="error, warning…" style="height: 26px; width: 160px; border-radius: 6px; border: 1px solid #48484A; background: #1C1C1E; color: #F2F2F7; padding: 0 8px; font-size: 12px">
+</div>
+<sc-if value="{{running}}" hint-placeholder-val="{{true}}">
+<div style="flex: 1 1 auto; padding: 16px 18px; font-family: 'SF Mono', ui-monospace, Menlo, monospace; font-size: 12px; line-height: 1.75; color: #E5E5EA; overflow-x: auto">
+<div style="color: #AEAEB2">$ sweetpad run --scheme {{scheme}} --on {{destId}} --non-interactive -o ndjson</div>
+<div><span style="color: #64D2FF">▸</span> Resolving package graph · 3 packages</div>
+<div><span style="color: #64D2FF">▸</span> Compiling 48 Swift files (Demo)</div>
+<div><span style="color: #FFD60A">⚠</span> ContentView.swift:42  'onChange(of:perform:)' was deprecated in iOS 17.0</div>
+<div><span style="color: #64D2FF">▸</span> Linking Demo · Signing with Apple Development</div>
+<div><span style="color: #30D158">✓</span> Build succeeded  12.4 s</div>
+<div><span style="color: #30D158">✓</span> Installed · launching com.example.demo</div>
+<div style="color: #AEAEB2">── app output ──</div>
+<div>Demo[1204] App launched, scene active</div>
+<div>Demo[1204] Fetched 20 items in 182 ms</div>
+</div>
+</sc-if>
+<sc-if value="{{idle}}" hint-placeholder-val="{{false}}">
+<div style="flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 48px 24px; text-align: center">
+<span style="font-size: 15px; font-weight: 600; color: #F2F2F7">Ready to run {{scheme}} on {{destName}}</span>
+<span style="font-size: 13px; color: #AEAEB2">Press ⌘R or the Play button. Build output streams here.</span>
+</div>
+</sc-if>
+<div style="padding: 8px 14px; border-top: 1px solid #3A3A3C; font-size: 11px; color: #AEAEB2; display: flex; flex-wrap: wrap; gap: 16px">
+<span>4 devices · 2 simulators booted</span>
+<span>Xcode 26.1 · sweetpad CLI</span>
+<span>⌘R Run · ⌘. Stop · ⌘⇧K Clean</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#0A66D6","options":["#0A66D6","#1D1D1F","#2E8B57"]},"startRunning":{"editor":"boolean","default":true},"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { scheme: 'Demo', config: 'Debug', dest: 'usb1', running: null };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#0A66D6';
+    const running = this.state.running ?? (this.props.startRunning ?? true);
+    const devices = [
+      { g: 'THIS MAC', id: 'mac', name: 'My Mac', os: 'macOS 26.1 · Designed for iPad', link: 'LOCAL', udid: '00006001-000A' },
+      { g: 'CONNECTED', id: 'usb1', name: 'iPhone 16 Pro', os: 'iOS 26.1', link: 'USB', udid: '00008140-001C' },
+      { g: 'CONNECTED', id: 'wifi1', name: 'iPad Air', os: 'iPadOS 26.0', link: 'WI‑FI', udid: '00008112-0019' },
+      { g: 'SIMULATORS', id: 'sim1', name: 'iPhone 17 Pro', os: 'iOS 26.1 · Booted', link: 'SIM', udid: '6F1C-A2E4' },
+      { g: 'SIMULATORS', id: 'sim2', name: 'iPad Pro 13″', os: 'iPadOS 26.1', link: 'SIM', udid: '91B0-77C3' }
+    ];
+    const badge = { LOCAL: ['#E5E5EA', '#3A3A3C'], USB: ['#DCEBFF', '#0A4FA8'], 'WI‑FI': ['#E2F5E8', '#1B6B35'], SIM: ['#EFE7FA', '#5B3A91'] };
+    const row = (on) => 'display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 44px; padding: 6px 8px; border: 0; border-radius: 7px; text-align: left; cursor: pointer; font-size: 13px; ' + (on ? 'background: ' + accent + '; color: #FFFFFF' : 'background: transparent; color: #1D1D1F');
+    const titles = ['THIS MAC', 'CONNECTED', 'SIMULATORS'];
+    const groups = titles.map((t) => ({
+      title: t,
+      items: devices.filter((d) => d.g === t).map((d) => {
+        const on = d.id === this.state.dest;
+        return { ...d, rowStyle: row(on), subColor: on ? '#FFFFFF' : '#636366', badgeBg: on ? 'rgba(255,255,255,0.22)' : badge[d.link][0], badgeFg: on ? '#FFFFFF' : badge[d.link][1], pick: () => this.setState({ dest: d.id }) };
+      })
+    }));
+    const dest = devices.find((d) => d.id === this.state.dest);
+    const schemes = ['Demo', 'DemoWidgets', 'DemoTests'].map((n) => ({ name: n, rowStyle: row(n === this.state.scheme), pick: () => this.setState({ scheme: n }) }));
+    const configs = ['Debug', 'Release'].map((n) => {
+      const on = n === this.state.config;
+      return { name: n, on: on ? 'true' : 'false', pick: () => this.setState({ config: n }), segStyle: 'flex: 1 1 0; height: 28px; border: 0; border-radius: 5px; font-size: 12px; cursor: pointer; ' + (on ? 'background: #FFFFFF; color: #1D1D1F; box-shadow: 0 1px 2px rgba(0,0,0,0.15)' : 'background: transparent; color: #3A3A3C') };
+    });
+    return {
+      accent, running, idle: !running, groups, schemes, configs,
+      scheme: this.state.scheme, config: this.state.config,
+      destName: dest.name, destKind: dest.link, destId: dest.udid,
+      statusText: running ? 'Running on ' + dest.name + ' · build succeeded with 1 warning' : 'Ready · ' + this.state.config,
+      runLabel: running ? 'Stop' : 'Run',
+      toggleRun: () => this.setState({ running: !running })
+    };
+  }
+}
+</script>
+</body>
+</html>

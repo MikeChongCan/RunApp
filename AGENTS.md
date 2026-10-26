@@ -7,7 +7,7 @@ USB or Wi‑Fi device, or a simulator), then press **Play**. Under the hood it c
 
 - License: MIT · open source on GitHub
 - Platform: macOS 15+ (Apple silicon and Intel), Swift 6, SwiftUI
-- Design mockups: https://claude.ai/artifact/GXx2pBB9TquR41AfAnPnea
+- Design mockups: `design/` (canvas source: `canvas.json` + `*.dc.html`), live at https://claude.ai/artifact/GXx2pBB9TquR41AfAnPnea
 
 ## Product scope
 
@@ -117,6 +117,20 @@ docs/sweetpad-cli.md        Observed SweetPad JSON/NDJSON shapes
   drops Hardened Runtime for those builds. It applies once the build is signed with a real identity.
 - Before you finish a change: `swiftformat . && swiftlint && sweetpad build --scheme RunApp --on mac -o quiet && sweetpad test --scheme RunApp --on mac`.
 - Commits: Conventional Commits (`feat:`, `fix:`, `docs:` …). Don't commit generated `.xcodeproj` or `DerivedData`.
+
+## Agent skills
+
+Run `Scripts/install-skills` once after cloning. It restores the skills pinned in `skills-lock.json` and exports
+Xcode's own skills (`xcrun mcpbridge run-agent skills export`) into `.agents/skills/`, symlinked into
+`.claude/skills/`. Both folders are git-ignored. Use them:
+
+- SwiftUI views: `swiftui-pro`, `swiftui-expert-skill`, Xcode's `swiftui-specialist` / `swiftui-whats-new-27`
+- Concurrency (`SweetPadClient`, `Process`, streams): `swift-concurrency`
+- Tests: `swift-testing-expert`, Xcode's `modernize-tests`
+- Windows, menus, AppKit interop: `macos-patterns`, Xcode's `app-resizability`
+- Accessibility: `ios-accessibility`. Release: `asc-notarization`, Xcode's `audit-xcode-security-settings`
+
+Add a skill with `npx skills add <owner/repo> -s <skill> -a claude-code opencode codex -y`, then commit `skills-lock.json`.
 
 ## References
 

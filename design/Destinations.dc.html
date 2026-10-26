@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Destination picker</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,"SF Pro Text",system-ui,sans-serif;color:#1D1D1F}
+a{color:#0A5FC2}a:hover{color:#084A97}
+button,input{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 420px; height: 640px; box-sizing: border-box; padding: 20px; background: #D9D9DE">
+<div style="height: 600px; box-sizing: border-box; border-radius: 12px; background: #FFFFFF; border: 1px solid #C7C7CC; box-shadow: 0 16px 40px rgba(0,0,0,0.18); display: flex; flex-direction: column; overflow: hidden">
+<div style="padding: 12px; border-bottom: 1px solid #E5E5EA; display: flex; flex-direction: column; gap: 6px">
+<label for="destsearch" style="font-size: 11px; font-weight: 600; color: #636366; letter-spacing: 0.04em">DESTINATION</label>
+<input id="destsearch" placeholder="Search devices and simulators" style="height: 32px; border-radius: 7px; border: 1px solid #D1D1D6; padding: 0 10px; font-size: 13px; background: #F5F5F7; color: #1D1D1F">
+</div>
+<div style="flex: 1 1 auto; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 12px">
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 11px; font-weight: 600; color: #636366; letter-spacing: 0.04em; padding: 2px 8px 4px">{{g.title}}</span>
+<sc-for list="{{g.items}}" as="d" hint-placeholder-count="2">
+<button onClick="{{d.pick}}" style="{{d.rowStyle}}">
+<span style="display: flex; align-items: center; gap: 10px; min-width: 0">
+<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="{{d.iconColor}}" stroke-width="1.4" aria-hidden="true"><rect x="5" y="1.5" width="8" height="15" rx="2"></rect><path d="M7.8 13.8h2.4"></path></svg>
+<span style="display: flex; flex-direction: column; align-items: flex-start; gap: 1px">
+<span style="font-size: 13px">{{d.name}}</span>
+<span style="font-size: 11px; color: {{d.subColor}}">{{d.os}}</span>
+</span>
+</span>
+<span style="font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: {{d.badgeBg}}; color: {{d.badgeFg}}">{{d.link}}</span>
+</button>
+</sc-for>
+</div>
+</sc-for>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 8px; border-radius: 8px; background: #FFF6E5">
+<span style="font-size: 12px; font-weight: 600; color: #7A4B00">iPhone 13 mini · not paired</span>
+<span style="font-size: 11px; color: #6B4A10">Unlock the phone and tap Trust, or enable Developer Mode in Settings › Privacy &amp; Security.</span>
+</div>
+</div>
+<div style="display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid #E5E5EA">
+<button style="flex: 1 1 0; height: 32px; border-radius: 7px; border: 1px solid #D1D1D6; background: #FFFFFF; font-size: 12px; color: #1D1D1F">Add simulator…</button>
+<button style="flex: 1 1 0; height: 32px; border-radius: 7px; border: 1px solid #D1D1D6; background: #FFFFFF; font-size: 12px; color: #1D1D1F">Refresh (⌘⇧R)</button>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#0A66D6","options":["#0A66D6","#1D1D1F","#2E8B57"]},"$preview":{"width":420,"height":640}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { dest: 'wifi1' };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#0A66D6';
+    const devices = [
+      { g: 'THIS MAC', id: 'mac', name: 'My Mac', os: 'macOS 26.1 · Designed for iPad', link: 'LOCAL' },
+      { g: 'CONNECTED DEVICES', id: 'usb1', name: 'iPhone 16 Pro', os: 'iOS 26.1 · paired', link: 'USB' },
+      { g: 'CONNECTED DEVICES', id: 'wifi1', name: 'iPad Air', os: 'iPadOS 26.0 · on network', link: 'WI‑FI' },
+      { g: 'CONNECTED DEVICES', id: 'wifi2', name: 'Apple Watch Series 10', os: 'watchOS 26.0 · via iPhone', link: 'WI‑FI' },
+      { g: 'SIMULATORS', id: 'sim1', name: 'iPhone 17 Pro', os: 'iOS 26.1 · Booted', link: 'SIM' },
+      { g: 'SIMULATORS', id: 'sim2', name: 'iPhone SE (3rd gen)', os: 'iOS 26.1', link: 'SIM' },
+      { g: 'SIMULATORS', id: 'sim3', name: 'iPad Pro 13″', os: 'iPadOS 26.1', link: 'SIM' }
+    ];
+    const badge = { LOCAL: ['#E5E5EA', '#3A3A3C'], USB: ['#DCEBFF', '#0A4FA8'], 'WI‑FI': ['#E2F5E8', '#1B6B35'], SIM: ['#EFE7FA', '#5B3A91'] };
+    const titles = ['THIS MAC', 'CONNECTED DEVICES', 'SIMULATORS'];
+    const groups = titles.map((t) => ({
+      title: t,
+      items: devices.filter((d) => d.g === t).map((d) => {
+        const on = d.id === this.state.dest;
+        return {
+          ...d,
+          rowStyle: 'display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 44px; padding: 6px 8px; border: 0; border-radius: 7px; text-align: left; cursor: pointer; ' + (on ? 'background: ' + accent + '; color: #FFFFFF' : 'background: transparent; color: #1D1D1F'),
+          iconColor: on ? '#FFFFFF' : '#636366',
+          subColor: on ? '#FFFFFF' : '#636366',
+          badgeBg: on ? 'rgba(255,255,255,0.22)' : badge[d.link][0],
+          badgeFg: on ? '#FFFFFF' : badge[d.link][1],
+          pick: () => this.setState({ dest: d.id })
+        };
+      })
+    }));
+    return { groups };
+  }
+}
+</script>
+</body>
+</html>

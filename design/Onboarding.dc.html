@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RunApp first run</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,"SF Pro Text",system-ui,sans-serif;color:#1D1D1F;background:#D9D9DE}
+a{color:#0A5FC2}a:hover{color:#084A97}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="box-sizing: border-box; width: 100%; min-height: 760px; padding: 24px; display: flex; justify-content: center; background: #D9D9DE">
+<div style="width: 100%; max-width: 760px; border-radius: 12px; overflow: hidden; background: #FFFFFF; border: 1px solid #C7C7CC; box-shadow: 0 20px 50px rgba(0,0,0,0.18); display: flex; flex-direction: column">
+<div style="display: flex; align-items: center; gap: 8px; padding: 12px 14px; background: #F2F2F5; border-bottom: 1px solid #D1D1D6">
+<span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 6px; background: #FF5F57"></span>
+<span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 6px; background: #FEBC2E"></span>
+<span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 6px; background: #28C840"></span>
+<span style="flex: 1 1 auto; text-align: center; font-size: 13px; font-weight: 600; color: #3A3A3C; padding-right: 52px">Welcome to RunApp</span>
+</div>
+<div style="padding: 32px 40px; display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.01em">Build and run without opening Xcode</h1>
+<p style="margin: 0; font-size: 14px; line-height: 1.5; color: #3A3A3C">RunApp drives the SweetPad CLI and Xcode's command-line tools. Here's what this Mac has.</p>
+</div>
+<div style="display: flex; flex-direction: column; border: 1px solid #E5E5EA; border-radius: 10px; overflow: hidden">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid #E5E5EA">
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#1B7F3B" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="8"></circle><path d="M6.5 10.2l2.4 2.3 4.6-4.8"></path></svg>
+<div style="flex: 1 1 240px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Xcode 26.1</span><span style="font-size: 12px; color: #636366">xcodebuild, simctl and devicectl found via xcode-select</span></div>
+<span style="font-size: 12px; color: #1B6B35; font-weight: 600">Ready</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid #E5E5EA">
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#1B7F3B" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="8"></circle><path d="M6.5 10.2l2.4 2.3 4.6-4.8"></path></svg>
+<div style="flex: 1 1 240px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Homebrew</span><span style="font-size: 12px; color: #636366">/opt/homebrew/bin/brew</span></div>
+<span style="font-size: 12px; color: #1B6B35; font-weight: 600">Ready</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 16px; background: #FFF8EB">
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#9A5B00" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="8"></circle><path d="M10 5.8v5M10 13.6v.4"></path></svg>
+<div style="flex: 1 1 240px; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 14px; font-weight: 600">SweetPad CLI not installed</span>
+<code style="font-family: 'SF Mono', ui-monospace, Menlo, monospace; font-size: 12px; color: #1D1D1F; background: #FFFFFF; border: 1px solid #EBD9B4; border-radius: 6px; padding: 6px 8px">brew install sweetpad-dev/tap/sweetpad</code>
+</div>
+<button style="height: 36px; padding: 0 16px; border-radius: 8px; border: 0; background: {{accent}}; color: #FFFFFF; font-size: 13px; font-weight: 600; cursor: pointer">Install</button>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 10px; background: #F5F5F7">
+<span style="font-size: 13px; font-weight: 600">Open projects from Terminal, like xed</span>
+<code style="font-family: 'SF Mono', ui-monospace, Menlo, monospace; font-size: 12px; color: #1D1D1F">runapp .        # open this folder's project or workspace</code>
+<code style="font-family: 'SF Mono', ui-monospace, Menlo, monospace; font-size: 12px; color: #1D1D1F">runapp . --run  # open it and start the last scheme + device</code>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+<button style="height: 32px; padding: 0 12px; border-radius: 7px; border: 1px solid #D1D1D6; background: #FFFFFF; font-size: 12px; color: #1D1D1F">Install runapp command</button>
+<span style="font-size: 12px; color: #636366">Links /usr/local/bin/runapp to the app bundle</span>
+</div>
+</div>
+<div style="display: flex; justify-content: flex-end; gap: 8px">
+<button style="height: 36px; padding: 0 16px; border-radius: 8px; border: 1px solid #D1D1D6; background: #FFFFFF; font-size: 13px; color: #1D1D1F">Open Project…</button>
+<button style="height: 36px; padding: 0 16px; border-radius: 8px; border: 1px solid #C7C7CC; background: #E9E9ED; font-size: 13px; color: #636366">Continue</button>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#0A66D6","options":["#0A66D6","#1D1D1F","#2E8B57"]},"$preview":{"width":1280,"height":760}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#0A66D6' };
+  }
+}
+</script>
+</body>
+</html>

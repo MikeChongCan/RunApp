@@ -17,3 +17,8 @@ RunAppTests/Info.plist
 # SwiftPM
 .build/
 .swiftpm/
+
+# Agent skills: installed locally, not vendored (third-party licenses vary; Xcode's are Apple's).
+# Restore with Scripts/install-skills (see AGENTS.md › Agent skills).
+.agents/skills/
+.claude/skills/

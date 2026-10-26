@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Installs the agent skills used for RunApp into .agents/skills (symlinked into .claude/skills).
+# Third-party skills are pinned in skills-lock.json; Xcode's skills are exported from the selected Xcode.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+npx -y skills experimental_install
+
+tmp="$(mktemp -d)"
+(cd "$tmp" && xcrun mcpbridge run-agent skills export >/dev/null)
+mkdir -p .agents/skills .claude/skills
+for dir in "$tmp"/xcode-skills/*/; do
+    name="$(basename "$dir")"
+    rm -rf ".agents/skills/$name"
+    mv "$dir" ".agents/skills/$name"
+    ln -sfn "../../.agents/skills/$name" ".claude/skills/$name"
+done
+rm -rf "$tmp"
+ls .agents/skills
