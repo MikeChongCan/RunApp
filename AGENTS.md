@@ -93,7 +93,8 @@ Prerequisites:
 - Sparkle EdDSA private key in the login keychain under the account name `RunApp`
   (the matching public key is `SUPublicEDKey` in `Project.swift`)
 
-Back up that private key and store the output offline. `Scripts/release` downloads Sparkle's tools to
+That private key is backed up in 1Password (vault `rockiestar-inc`, item "RunApp Sparkle EdDSA key");
+restore it with `generate_keys --account RunApp -f <file>`. To export a fresh copy: `Scripts/release` downloads Sparkle's tools to
 `.build/sparkle/` when they are not already there:
 
 ```bash
