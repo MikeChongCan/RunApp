@@ -18,6 +18,7 @@ struct RunAppApp: App {
             }
             CommandGroup(after: .appInfo) {
                 CheckForUpdatesButton(updater: appDelegate.updater)
+                Button("Install Command Line Tool…") { CommandLineTool.presentInstall() }
             }
         }
     }

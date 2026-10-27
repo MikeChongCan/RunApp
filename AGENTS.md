@@ -13,7 +13,7 @@ USB or Wi‑Fi device, or a simulator), then press **Play**. Under the hood it c
 
 | Feature | How |
 | --- | --- |
-| `runapp .` / `runapp path/to/App.xcodeproj` | Small CLI shim that opens the app via `open -a RunApp --args <path>` (same idea as `xed`) |
+| `runapp .` / `runapp path/to/App.xcodeproj` | Small CLI shim that opens the app via `open -a RunApp --args <path>` (same idea as `xed`). Ships in the app; RunApp › Install Command Line Tool… links it into `/usr/local/bin` |
 | Find project | Look in the folder for `*.xcworkspace`, then `*.xcodeproj`, then `Package.swift` (SweetPad also handles Tuist and XcodeGen) |
 | Scheme list | `sweetpad scheme list -o json` |
 | Configurations | `sweetpad project info -o json` → `data.configurations`; pass `--configuration <C>` |
@@ -101,11 +101,11 @@ already there. To export a fresh copy:
 .build/sparkle/bin/generate_keys --account RunApp -x ~/RunApp-sparkle-private-key.txt
 ```
 
-Cut a release (build number defaults to 1):
+Cut a release. The build number defaults to 1, but Sparkle compares build numbers, so pass one higher than the last release:
 
 ```bash
-Scripts/release 0.1.0          # notarize, gh release create v0.1.0, commit, push
-Scripts/release 0.1.0 1 --dry-run   # sign and package only
+Scripts/release 0.2.0 2        # notarize, gh release create v0.2.0, commit, push
+Scripts/release 0.2.0 2 --dry-run   # sign and package only
 ```
 
 `--dry-run` builds the requested version, signs, verifies, and writes the zip, the dmg, and
@@ -128,11 +128,13 @@ RunApp/
     Console/                Build / app output / device log tabs
     Onboarding/             Toolchain check (Xcode, brew, sweetpad)
     Updates/                Sparkle 2 controller and Check for Updates menu
+    CommandLineTool/        Install Command Line Tool… (links /usr/local/bin/runapp)
   Core/
     SweetPad/               SweetPadClient: runs the process, decodes JSON/NDJSON envelopes
     Models/                 Scheme, Destination (kind: mac|usb|wifi|simulator), BuildEvent
     ProjectLocator.swift    Finds workspace/project/package from a path
-Scripts/runapp              CLI shim (`open -a RunApp --args <abs path>`; `open -a RunApp <path>` if already running)
+Scripts/runapp              Symlink to RunApp/Resources/runapp, the CLI shim bundled in the app
+                            (`open -a RunApp --args <abs path>`; `open -a RunApp <path>` if already running)
 Scripts/release             Developer ID archive, notarize, appcast item, GitHub release
 appcast.xml                 Sparkle RSS feed (items inserted by Scripts/release)
 RunAppTests/                Swift Testing unit tests

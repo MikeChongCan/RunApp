@@ -13,14 +13,18 @@ Status: early skeleton. MIT licensed.
 
 ## Install the `runapp` command
 
+In RunApp, choose **RunApp › Install Command Line Tool…**. It links `/usr/local/bin/runapp` to the script
+inside the app (asking for an administrator password if needed). Then:
+
 ```bash
-ln -sf "$PWD/Scripts/runapp" /usr/local/bin/runapp   # or anywhere on your PATH
 runapp .                         # open the current folder
 runapp path/to/App.xcodeproj     # or a specific project / workspace
 ```
 
-`runapp` opens `/Applications/RunApp.app`, falling back to `~/Applications` or the newest build in DerivedData.
-Set `RUNAPP_APP=/path/to/RunApp.app` to override this.
+From a source checkout you can link it yourself: `ln -sf "$PWD/Scripts/runapp" /usr/local/bin/runapp`.
+
+`runapp` opens the app it was installed from, otherwise `/Applications/RunApp.app`, `~/Applications`, or the
+newest build in DerivedData. Set `RUNAPP_APP=/path/to/RunApp.app` to override this.
 
 ## Build from source
 
@@ -49,8 +53,8 @@ Back up the Sparkle private key (store the output offline; the first `Scripts/re
 ```
 
 ```bash
-Scripts/release 0.1.0            # version, optional build number (defaults to 1)
-Scripts/release 0.1.0 1 --dry-run   # sign and package only; skip notarization, GitHub, commit, and push
+Scripts/release 0.2.0 2          # version, build number (defaults to 1; must go up every release for Sparkle)
+Scripts/release 0.2.0 2 --dry-run   # sign and package only; skip notarization, GitHub, commit, and push
 ```
 
 Artifacts land in `build/release/`. A full run creates the GitHub release `v<version>` (zip and dmg), then commits `Project.swift` and `appcast.xml` as `chore(release): v<version>` and pushes.
