@@ -13,5 +13,13 @@
       <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
       <enclosure url="https://github.com/MikeChongCan/RunApp/releases/download/v0.1.0/RunApp-0.1.0.zip" length="3429694" type="application/octet-stream" sparkle:edSignature="SV3a3AgrwBpYNIRHTOQZzyb3hP5tK7sS4VP9awDIx4fDP9LNZW2J8B+lxf5mZuCxV3709cDmOrvHj/GazaOOCQ=="/>
     </item>
+    <item>
+      <title>Version 0.2.0</title>
+      <pubDate>Tue, 27 Oct 2026 12:51:05 +0000</pubDate>
+      <sparkle:version>2</sparkle:version>
+      <sparkle:shortVersionString>0.2.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/MikeChongCan/RunApp/releases/download/v0.2.0/RunApp-0.2.0.zip" length="3444209" type="application/octet-stream" sparkle:edSignature="kgJ+o/aXWHW7bf/uquJnJYhluYi9o24xkBSrXf5tFELpEXiG9oL6R4kaHXtLhluRYEuoG221oXkpOYNrvnptDg=="/>
+    </item>
   </channel>
 </rss>

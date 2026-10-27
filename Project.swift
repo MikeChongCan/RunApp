@@ -4,8 +4,8 @@ import ProjectDescription
 // Sources are buildable (synchronized) folders: add files on disk, never here.
 // Settings are written out in full (defaultSettings: .none) so nothing changes with a Tuist update.
 
-let marketingVersion = "0.1.0"
-let buildNumber = "1"
+let marketingVersion = "0.2.0"
+let buildNumber = "2"
 
 let projectSettings: Settings = .settings(
     base: [
