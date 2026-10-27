@@ -213,7 +213,9 @@ ensure_sparkle_tools() {
 
 zip_app() {
   rm -f "$ZIP"
-  ditto -c -k --keepParent "$APP" "$ZIP"
+  # No xattrs/resource forks: ditto would store them as inline ._* entries, and an extractor
+  # that writes those as files breaks the Sparkle.framework seal ("unsealed contents").
+  ditto -c -k --norsrc --noextattr --noqtn --keepParent "$APP" "$ZIP"
 }
 
 make_dmg() {
